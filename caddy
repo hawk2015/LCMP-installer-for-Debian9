@@ -465,7 +465,7 @@ caddyfile () {
 	" >> $caddyfile
 
    # if insatall plugin:tls.dns.cloudflare, modify Caddyfile
-		if [[ $plugin == "tls.dns.cloudflare" ]]; then
+		if [[ "$(echo $plugin | grep "tls.dns.cloudflare")" != "" ]]; then
 			echo "$domainname {
 		root $caddywww
 		gzip
