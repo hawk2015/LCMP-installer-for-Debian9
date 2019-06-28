@@ -400,8 +400,8 @@ installphp () {
 				wget -q https://packages.sury.org/php/apt.gpg -O- | apt-key add -
 	      echo "deb https://packages.sury.org/php/ stretch main" | tee /etc/apt/sources.list.d/php.list
 					echo ""
-					apt update
-					apt install $phpversion -y
+					apt update;
+					apt install $phpversion -y;
 					apt install php7.3 php7.3-mysql php7.3-gd php7.3-xml php7.3-cgi php7.3-cli php7.3-curl php7.3-zip php7.3-mbstring unzip -y
 					echo ""
 					# enable service startup and run
