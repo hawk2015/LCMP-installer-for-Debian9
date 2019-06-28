@@ -13,9 +13,6 @@ caddyfile="/etc/caddy/Caddyfile" # caddy web server configuration file
 caddylog="/var/log/caddy" # folder where logs will be written
 caddyuser="www-data" # user under caddy is gonna be running
 
-providerapikey=""
-provideremail=""
-
 phppath="/etc/php"
 # Load and replace above variable if Caddy.conf exists
 [[ -e /etc/Caddy.conf ]] && source /etc/Caddy.conf
@@ -145,6 +142,7 @@ stopcaddy () {
 		sleep 1
 		echo "  [$(tput setaf 2)DONE$(tput sgr0)]"
 	fi
+	systemctl status caddy
 }
 
 reloadcaddy () {
@@ -295,22 +293,6 @@ installcaddy () {
 	# Download caddy
 	getcaddy;
 
-	# Creating folders & files
-	# reference official doc: https://github.com/mholt/caddy/issues/2209
-	mkdir -p $caddypath
-	mkdir -p $caddyssl
-	mkdir -p $caddylog
-	mkdir -p $caddyconf
-
-	chown -R root:root /etc/caddy
-	chown -R root:$caddyuser $caddyssl
-	chmod 0770 $caddyssl
-
-	touch $caddylog/access.log
-	touch $caddylog/error.log
-	chown -R $caddyuser:$caddyuser $caddylog
-	chmod 555 $caddylog
-
 	# Extract Caddy to appropriate folder
 	echo -n "  Extracting $caddyname to $caddypath..."
 	if ! tar xzf caddy_linux_custom.tar.gz -C $caddypath; then
@@ -327,7 +309,6 @@ installcaddy () {
 	chown root:root $caddypath/caddy
 	chmod 755 $caddypath/caddy
 
-
 	# Creating non-root user
 	if id -u $caddyuser >/dev/null 2>&1; then
 		echo "  User '$caddyuser' already exists. Skipped!"
@@ -337,6 +318,23 @@ installcaddy () {
 		useradd -g $caddyuser --home-dir $caddywww --no-create-home --shell /usr/sbin/nologin --system $caddyuser &> /dev/null
 		echo "  [$(tput setaf 2)DONE$(tput sgr0)]"
   fi
+
+	# Creating folders & files
+	# reference official doc: https://github.com/mholt/caddy/issues/2209
+	mkdir -p $caddypath
+	mkdir -p $caddyssl
+	mkdir -p $caddylog
+	mkdir -p $caddyconf
+
+	touch $caddylog/access.log
+	touch $caddylog/error.log
+
+	chown -R root:root /etc/caddy
+	chown -R root:$caddyuser $caddyssl
+	chmod 0770 $caddyssl
+
+	chown -R $caddyuser:$caddyuser $caddylog
+	chmod 555 $caddylog
 
 	# Port setup
 	echo -n "  Binding port using setcap..."
@@ -452,7 +450,6 @@ phpvalue () {
 	phpfpm7="/etc/php/7.3/fpm/pool.d/www.conf"
 }
 
-
 caddyfile () {
   # php FastCGI configuration
   phpsock=127.0.0.1:9000
@@ -480,11 +477,10 @@ caddyfile () {
 							read -r -p "  Email: " domainmail
 						done
 						echo ""
-						provideremail=$domainmail
+
 
 						echo "  Enter $(tput setaf 3)Cloudflare Global API Key$(tput sgr0) for enabling the DNS Challenge"
 						read -r -p "  Global API Key: " domainkey
-						providerapikey=$domainkey
 					  echo ""
 				else
 					echo "  Enter your email for automated ssl"
@@ -494,6 +490,7 @@ caddyfile () {
 					echo "  Invalid email"
 					echo "  Type $(tput setaf 3)off$(tput sgr0) if you don't want https"
 						read -r -p "  Email: " domainmail
+
 					done
 				fi
 		echo "$domainname {
@@ -508,8 +505,20 @@ caddyfile () {
 
    # if insatall plugin:tls.dns.cloudflare, modify Caddyfile
 		if [[ $plugin == "tls.dns.cloudflare" ]]; then
-		sed -i "5itls { dns cloudflare }" $caddyfile
-		echo "  DNS provider by $plugin ! "
+			echo "$domainname {
+		root $caddywww
+		gzip
+		tls $domainmail
+		tls {
+			dns cloudflare
+		}
+		log $caddylog/access.log
+		errors $caddylog/error.log
+		fastcgi / $phpsock php
+		}
+		" >> $caddyfile
+
+		echo "  DNS challenge by $plugin ! "
 	  fi
 
 		# reference official doc: https://github.com/mholt/caddy/issues/2209
@@ -585,8 +594,10 @@ else
 
 		# if Enabling the DNS Challenge, need cloudflare Email & Global API Key
 		if [[ $plugin == "tls.dns.cloudflare" ]]; then
-		sed -i "9iEnvironment=CLOUDFLARE_EMAIL=$provideremail" /etc/systemd/system/caddy.service
-		sed -i "10iEnvironment=CLOUDFLARE_API_KEY=$providerapikey" /etc/systemd/system/caddy.service
+		domainmail="Environment=CLOUDFLARE_EMAIL="${domainmail}
+		domainkey="Environment=CLOUDFLARE_API_KEY="${domainkey}
+		sed -i "9i${domainmail}" /etc/systemd/system/caddy.service
+		sed -i "10i${domainkey}" /etc/systemd/system/caddy.service
 	  fi
 
 		chmod 644 /etc/systemd/system/caddy.service
@@ -806,7 +817,7 @@ case $1 in
 	'-status'|'--status'|'status'|'caddystatus' )
 		caddystatus;;
 	'-install'|'--install'|'install' )
-		amiroot; plugin="$2"; installcaddy; makeservice; caddyfile;;
+		amiroot; plugin="$2"; installcaddy; caddyfile; makeservice;;
 	'-update'|'--update'|'update'|'updatecaddy' )
 		amiroot; plugin="$2"; updatecaddy; caddyfile;;
 	'-installphp'|'--installphp'|'installphp' )
