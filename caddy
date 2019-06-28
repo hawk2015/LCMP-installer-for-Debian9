@@ -3,12 +3,12 @@
 # LCMP Installer for Debian9 x64
 # reference: https://github.com/sayem314/Caddy-Web-Server-Installer
 #
-red=$(tput setaf 1)
-blue=$(tput setaf 2)
-yellow=$(tput setaf 3)
-green=$(tput setaf 4)
-purple=$(tput setaf 5)
-normal=$(tput sgr0)
+red="tput setaf 1"
+blue="tput setaf 2"
+yellow="tput setaf 3"
+green="tput setaf 4"
+purple="tput setaf 5"
+normal="tput sgr0"
 
 
 # Do not change any value after installation
@@ -49,7 +49,7 @@ about () {
 
 howto () {
 	echo "  Welcome!"
-	echo "  run $yellow$bashname help $normal for help"
+	echo "  run $($yellow)$bashname help $($normal) for help"
 	echo ""
 }
 
@@ -76,7 +76,7 @@ isinstalled () {
 	# check if caddy is installed or return error code 1
 	if [[ ! -x $caddypath/caddy ]]; then
 		echo; echo "  Caddy is not installed.";
-		echo "  run $yellow$bashname install$normal to install $caddyname";
+		echo "  run $($yellow)$bashname install$($normal) to install $caddyname";
 		echo; return 1
 	fi
 }
@@ -107,7 +107,7 @@ startcaddy () {
 			sudo -H -u $caddyuser $caddypath/caddy -conf="$caddyfile" -quiet=true -pidfile=$caddypid/caddy.pid -agree &
 		fi
 		sleep 1
-		echo "  [$blueDONE$normal]"
+		echo "  [$($blue)DONE$($normal)]"
 
 		sleep 1
 		# restart or reload php for smooth environment
@@ -115,7 +115,7 @@ startcaddy () {
 		pids=$(pgrep -nf $caddypath/caddy); caddystatus;
 	else
 		echo ""
-		echo "  $caddyname is already $bluerunning$normal on: $pids (PID)"
+		echo "  $caddyname is already $($blue)running$($normal) on: $pids (PID)"
 		echo ""
 	fi
 
@@ -131,7 +131,7 @@ stopcaddy () {
 	pids=$(pgrep -nf $caddypath/caddy)
 	if [ -z "$pids" ] ; then
 		echo ""
-		echo "  $caddyname is $redNOT running$normal"
+		echo "  $caddyname is $($red)NOT running$($normal)"
 		echo ""
 	else
 		secs=$(ps -p "$pids" -oetime= | tr '-' ':' | awk -F: '{ total=0; m=1; } { for (i=0; i < NF; i++) {total += $(NF-i)*m; m *= i >= 2 ? 24 : 60 }} {print total}')
@@ -147,7 +147,7 @@ stopcaddy () {
 			kill "$pids"
 		fi
 		sleep 1
-		echo "  [$blueDONE$normal]"
+		echo "  [$($blue)DONE$($normal)]"
 	fi
 	systemctl status caddy
 }
@@ -155,8 +155,8 @@ stopcaddy () {
 reloadcaddy () {
 	if [ -z "$pids" ] ; then
 		echo ""
-		echo "  $caddyname is $redNOT running$normal"
-		echo "  run $yellow$bashname start$normal to start Caddy"
+		echo "  $caddyname is $($red)NOT running$($normal)"
+		echo "  run $($yellow)$bashname start$($normal) to start Caddy"
 		echo ""
 	else
 		echo ""
@@ -168,9 +168,9 @@ reloadcaddy () {
 			kill -USR1 "$pids"
 		fi
 		sleep 2
-		echo "  [$blueDONE$normal]"
+		echo "  [$($blue)DONE$($normal)]"
 		echo ""
-		echo "  To restart, use $(tput setaf 6)$bashname restart$normal"
+		echo "  To restart, use $(tput setaf 6)$bashname restart$($normal)"
 		echo "  Refresh your browser at least 3 times to take affect"
 		echo ""
 	fi
@@ -199,7 +199,7 @@ caddystatus () {
 	# Detect Caddy process
 	if [ -z "$pids" ] ; then
 		echo ""
-		echo "  $caddyname is $redNOT running$normal"
+		echo "  $caddyname is $($red)NOT running$($normal)"
 		echo ""
 	else
 		caddymemusage=$(ps axo rss,comm,pid | grep "$pids" | awk '{$1/=1024;printf "%.0fMB\t",$1}{print $2}' | awk '{print $1}')
@@ -217,7 +217,7 @@ caddystatus () {
 		systemctl status caddy
 
 		echo ""
-		echo "  $caddyname is $bluerunning$normal"
+		echo "  $caddyname is $($blue)running$($normal)"
 		echo "  Caddy (PID: $pids) is using $caddymemusage RAM"
 		echo "  System available RAM $(free -h | grep Mem: | awk '{print $7}')B"
 		echo "  Uptime - $caddyuptime"
@@ -277,7 +277,7 @@ getcaddy () {
 
 	# Star downloading caddy now
 	if ! wget -q $nocert "https://caddyserver.com/download/linux/$cpubits" -O "caddy_linux_custom.tar.gz" --show-progress; then
-		echo "  [$redFAILED$normal]"
+		echo "  [$($red)FAILED$($normal)]"
 		echo ""
 		echo "  Error: Cannot download Caddy binary!"
 		echo "  https://caddyserver.com/download/linux/$cpubits"
@@ -303,13 +303,13 @@ installcaddy () {
 	# Extract Caddy to appropriate folder
 	echo -n "  Extracting $caddyname to $caddypath..."
 	if ! tar xzf caddy_linux_custom.tar.gz -C $caddypath; then
-		echo "  [$redFAILED$normal]"
+		echo "  [$($red)FAILED$($normal)]"
 		echo ""
 		echo "  Error: Cannot extract 'caddy_linux_custom.tar.gz'"
 		echo "  Abort."
 		exit 1
 	fi
-	echo " $blue[DONE]$normal"
+	echo " $($blue)[DONE]$($normal)"
 	rm -f caddy_linux_custom.tar.gz # Deleting Caddy archive
 
 	# put the caddy binary in the system wide binary directory and give it appropriate ownership and permissions:
@@ -323,7 +323,7 @@ installcaddy () {
 		echo -n "  Creating user '$caddyuser'..."
 		groupadd $caddyuser
 		useradd -g $caddyuser --home-dir $caddywww --no-create-home --shell /usr/sbin/nologin --system $caddyuser &> /dev/null
-		echo "  [$blueDONE$normal]"
+		echo "  [$($blue)DONE$($normal)]"
   fi
 
 	# Creating folders & files
@@ -346,12 +346,12 @@ installcaddy () {
 	# Port setup
 	echo -n "  Binding port using setcap..."
 	if hash setcap 2>/dev/null; then
-		setcap cap_net_bind_service=+ep $caddypath/caddy &>/dev/null && echo "  [$blueDONE$normal]" || echo "  [$redFAILED$normal]"
+		setcap cap_net_bind_service=+ep $caddypath/caddy &>/dev/null && echo "  [$($blue)DONE$($normal)]" || echo "  [$($red)FAILED$($normal)]"
 	elif hash apt-get 2>/dev/null; then
 		apt-get install libcap2-bin -y &>/dev/null
-		setcap cap_net_bind_service=+ep $caddypath/caddy &>/dev/null && echo "  [$blueDONE$normal]" || echo "  [$redFAILED$normal]"
+		setcap cap_net_bind_service=+ep $caddypath/caddy &>/dev/null && echo "  [$($blue)DONE$($normal)]" || echo "  [$($red)FAILED$($normal)]"
 	else
-		echo "  [$redFAILED$normal]"
+		echo "  [$($red)FAILED$($normal)]"
 	fi
 
 	# Show succes message
@@ -393,21 +393,21 @@ updatecaddy () {
 	echo -n "  Removing current $caddyname from $caddypath"
 	sleep 0.2
 	rm -rf "${caddypath:?}/"*
-	echo "  [$blueDONE$normal]"
+	echo "  [$($blue)DONE$($normal)]"
 	sleep 0.1
 
 	# Extract Caddy to appropriate folder
 	echo -n "  Extracting $caddyname to $caddypath..."
 	if ! tar xzf caddy_linux_custom.tar.gz -C $caddypath; then
-		echo "  [$redFAILED$normal]"
+		echo "  [$($red)FAILED$($normal)]"
 		echo ""
 		echo "  Error: Cannot extract 'caddy_linux_custom.tar.gz'"
 		echo "  Abort."
 		exit 1
 	fi
-	echo " $blue[DONE]$normal"
+	echo " $($blue)[DONE]$($normal)"
 
-	# Granting owner access and required permission
+	# Granting owner access and requi($red) permission
 	if id -u $caddyuser >/dev/null 2>&1; then
 		chown -R $caddyuser $caddypath
 	fi
@@ -429,7 +429,7 @@ installphp () {
 				# Install PHP
 			if hash yum 2>/dev/null; then
 					yum update -y &>/dev/null && yum install sed php-fpm php-cli php-curl curl sudo -y &>/dev/null
-					echo "  [$blueDONE$normal]"
+					echo "  [$($blue)DONE$($normal)]"
 					echo "  Installed 'php-fpm php-cli php-curl curl sudo'"
 
 	 		elif hash apt-get 2>/dev/null; then
@@ -445,7 +445,7 @@ installphp () {
 					systemctl enable php7.3-fpm
 					systemctl start php7.3-fpm
 
-					echo " PHP installation was[$blueDONE$normal]"
+					echo " PHP installation was[$($blue)DONE$($normal)]"
      fi
 	 fi
 }
@@ -475,19 +475,19 @@ caddyfile () {
 
 			 # if Enabling the DNS Challenge, need cloudflare Email & Global API Key
 		 elif [[ "$(echo $plugin | grep "tls.dns.cloudflare")" != "" ]]; then
-					echo "  Enter your $yellowCloudflare Email$normal for enabling the DNS Challenge"
+					echo "  Enter your $($yellow)Cloudflare Email$($normal) for enabling the DNS Challenge"
 					read -r -p "  Email: " domainmail
 						until [[ "$domainmail" == *@*.* || "$domainmail" == off ]]; do
 							echo ""
 							echo "  Invalid email"
-							echo "  Type $yellowoff$normal if you don't want https"
+							echo "  Type $($yellow)off$($normal) if you don't want https"
 							read -r -p "  Email: " domainmail
 						done
 						echo ""
  "$(echo $plugin | grep "tls.dns.cloudflare")" != ""
 
 
-						echo "  Enter $yellowCloudflare Global API Key$normal for enabling the DNS Challenge"
+						echo "  Enter $($yellow)Cloudflare Global API Key$normal for enabling the DNS Challenge"
 						read -r -p "  Global API Key: " domainkey
 					  echo ""
 				else
@@ -496,7 +496,7 @@ caddyfile () {
 						until [[ "$domainmail" == *@*.* || "$domainmail" == off ]]; do
 					echo ""
 					echo "  Invalid email"
-					echo "  Type $yellowoff$normal if you don't want https"
+					echo "  Type $($yellow)off$normal if you don't want https"
 						read -r -p "  Email: " domainmail
 
 					done
@@ -552,7 +552,7 @@ fi
 	if [[ ! -e $caddywww/index.html ]]; then
 		echo "<TITLE>Caddy Default Page</TITLE>
 
-<h1><font color="green">It works!</font></h1>
+<h1><font color="(green)">It works!</font></h1>
 
 <h3><font color="grey">This is the default welcome page used to test the correct operation of the Caddy web server after installation via Caddy Web Server Installer.</font></h3>
 
@@ -579,7 +579,7 @@ You should <font color="#D03C3C">replace this file</font>
 
 	echo ""
 	echo "  Done. Caddy has been installed :)"
-	echo "  Run $yellow$bashname start$normal to start $caddyname"
+	echo "  Run $($yellow)$bashname start$($normal) to start $caddyname"
 	echo ""
 
 }
@@ -608,7 +608,7 @@ else
 	  fi
 
 		chmod 644 /etc/systemd/system/caddy.service
-		echo "  $blueDONE$normal"
+		echo "  $($blue)DONE$($normal)"
 		echo ""
 	fi
 fi
@@ -686,7 +686,7 @@ removeservice () {
 			systemctl disable caddy &>/dev/null
 			rm -f /etc/systemd/system/caddy.service &>/dev/null
 		fi
-		echo "  [$blueDONE$normal]"
+		echo "  [$($blue)DONE$($normal)]"
 	fi
 }
 
@@ -703,7 +703,7 @@ deletecaddydata () {
 		echo -n "  Deleting $caddywww (data)..."
 		sleep 2
 		rm -rf $caddywww # deleting caddy html folder
-		echo "  [$blueDONE$normal]"
+		echo "  [$($blue)DONE$($normal)]"
 		# remove caddy user too if exists
 		if [[ ! $caddyuser == $(whoami) ]]; then
 				userdel $caddyuser # delete caddy user
@@ -711,7 +711,7 @@ deletecaddydata () {
 		fi
 		;;
 	*)
-		echo "  Removing $caddywww (data)... [$purpleSkipped$normal]"
+		echo "  Removing $caddywww (data)... [$($purple)Skipped$($normal)]"
 		;;
 	esac
 }
@@ -767,9 +767,9 @@ checkforupdate () {
 	CADDYV=$(wget -qO- https://api.github.com/repos/mholt/caddy/releases/latest | grep tag_name | sed 's/[^0-9]*//g' | sed 's/^0*//')
 	if [[ $CADDYV -gt $caddyversion ]]; then
 		echo ""
-		echo "  $redNOTICE:$normal"
+		echo "  $($red)NOTICE:$($normal)"
 		echo "  There is an update available of $caddyname"
-		echo "  run $yellow$bashname update$normal to update"
+		echo "  run $($yellow)$bashname update$($normal) to update"
 		echo ""
 	else
 		[[ $CADDYV == "" ]] || echo $(date +%s) > $caddypath/update.check || echo $(date +%s) | sudo tee $caddypath/update.check
@@ -791,7 +791,7 @@ backupcaddy () {
 
 restorecaddy () {
 	if [[ ! -x $caddypath/caddy ]]; then
-		echo "  $redWARN:$normal"
+		echo "  $($red)WARN:$($normal)"
 		echo "  Caddy is not installed."
 		echo "  It is recommended to install Caddy before restoring."
 		read -r -p "  Press enter to continue anyway!"
