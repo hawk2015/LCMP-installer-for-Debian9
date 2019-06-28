@@ -4,7 +4,7 @@
 #
 
 
-if [[ -e "/etc/init.d/caddy" ]]; then
+if [[ -e "/tmp/caddy" ]]; then
 	echo ""
 	echo "  Removing old Caddy script"
 	rm -f /tmp/caddy
