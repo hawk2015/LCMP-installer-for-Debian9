@@ -552,7 +552,7 @@ fi
 	if [[ ! -e $caddywww/index.html ]]; then
 		echo "<TITLE>Caddy Default Page</TITLE>
 
-<h1><font color="(green)">It works!</font></h1>
+<h1><font color="green">It works!</font></h1>
 
 <h3><font color="grey">This is the default welcome page used to test the correct operation of the Caddy web server after installation via Caddy Web Server Installer.</font></h3>
 
