@@ -409,7 +409,6 @@ installphp () {
 					systemctl start $phpversion
 
 					echo " PHP installation was[$($blue)DONE$($normal)]"
-     fi
 	 fi
 }
 
