@@ -459,7 +459,7 @@ phpvalue () {
 
 caddyfile () {
   # php FastCGI configuration
-  phpsock=127.0.0.1:9000
+  phpsock=/run/php/php7.3-fpm.sock
 	# Check if Caddyfile exist
 	# Generate Caddyfile
 	if [[ ! -e $caddyfile ]]; then
