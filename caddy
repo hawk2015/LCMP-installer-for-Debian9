@@ -118,6 +118,9 @@ startcaddy () {
 		echo ""
 	fi
 
+	#reload caddyfile
+  caddy -conf $caddyfile
+
 	systemctl daemon-reload
 	systemctl enable caddy
 }
@@ -471,12 +474,12 @@ caddyfile () {
 		gzip
 		tls $domainmail
 		tls {
-			dns cloudflare
+		dns cloudflare
 		}
 		log $caddylog/access.log
 		errors $caddylog/error.log
 		fastcgi / $phpsock php
-		}
+}
 		" >> $caddyfile
 
 		echo "  DNS challenge by $plugin ! "
@@ -553,7 +556,7 @@ else
 		wget -q -P /etc/systemd/system/ https://raw.githubusercontent.com/mholt/caddy/master/dist/init/linux-systemd/caddy.service
 
 		# if Enabling the DNS Challenge, need cloudflare Email & Global API Key
-		if [[ $plugin == "tls.dns.cloudflare" ]]; then
+		if [[ "$(echo $plugin | grep "tls.dns.cloudflare")" != "" ]]; then
 		domainmail="Environment=CLOUDFLARE_EMAIL="${domainmail}
 		domainkey="Environment=CLOUDFLARE_API_KEY="${domainkey}
 		sed -i "9i${domainmail}" /etc/systemd/system/caddy.service
