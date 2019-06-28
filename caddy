@@ -446,6 +446,21 @@ caddyfile () {
 						echo "  Enter $($yellow)Cloudflare Global API Key$normal for enabling the DNS Challenge"
 						read -r -p "  Global API Key: " domainkey
 					  echo ""
+						echo "$domainname {
+											root $caddywww
+											gzip
+											tls $domainmail
+											tls {
+												dns cloudflare
+											}
+											log $caddylog/access.log
+											errors $caddylog/error.log
+											fastcgi / $phpsock php
+										}
+					" >> $caddyfile
+
+					echo "  DNS challenge by $plugin ! "
+
 				else
 					echo "  Enter your email for automated ssl"
 					read -r -p "  Email: " domainmail
@@ -454,36 +469,18 @@ caddyfile () {
 					echo "  Invalid email"
 					echo "  Type $($yellow)off$normal if you don't want https"
 						read -r -p "  Email: " domainmail
-
 					done
-				fi
-		echo "$domainname {
-	root $caddywww
-	gzip
-	tls $domainmail
-	log $caddylog/access.log
-	errors $caddylog/error.log
-	fastcgi / $phpsock php
-	}
-	" >> $caddyfile
 
-   # if insatall plugin:tls.dns.cloudflare, modify Caddyfile
-		if [[ "$(echo $plugin | grep "tls.dns.cloudflare")" != "" ]]; then
-			echo "$domainname {
-		root $caddywww
-		gzip
-		tls $domainmail
-		tls {
-		dns cloudflare
-		}
-		log $caddylog/access.log
-		errors $caddylog/error.log
-		fastcgi / $phpsock php
-}
-		" >> $caddyfile
-
-		echo "  DNS challenge by $plugin ! "
-	  fi
+					echo "$domainname {
+										root $caddywww
+										gzip
+										tls $domainmail
+										log $caddylog/access.log
+										errors $caddylog/error.log
+										fastcgi / $phpsock php
+									}
+								" >> $caddyfile
+			fi
 
 		# reference official doc: https://github.com/mholt/caddy/issues/2209
 		chown root:root $caddyfile
