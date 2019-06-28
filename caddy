@@ -21,8 +21,7 @@ caddylog="/var/log/caddy" # folder where logs will be written
 caddyuser="www-data" # user under caddy is gonna be running
 
 phppath="/etc/php"
-# Load and replace above variable if Caddy.conf exists
-[[ -e /etc/Caddy.conf ]] && source /etc/Caddy.conf
+phpversion="php7.3-fpm"
 
 # Global config
 caddyname="Caddy Web Server"
@@ -111,7 +110,7 @@ startcaddy () {
 
 		sleep 1
 		# restart or reload php for smooth environment
-		hash php 2>/dev/null && restartphpfpm;
+		hash php 2>/dev/null && service $phpversion restart &>/dev/null;
 		pids=$(pgrep -nf $caddypath/caddy); caddystatus;
 	else
 		echo ""
@@ -121,7 +120,6 @@ startcaddy () {
 
 	systemctl daemon-reload
 	systemctl enable caddy
-	systemctl start caddy
 }
 
 stopcaddy () {
@@ -149,7 +147,6 @@ stopcaddy () {
 		sleep 1
 		echo "  [$($blue)DONE$($normal)]"
 	fi
-	systemctl status caddy
 }
 
 reloadcaddy () {
@@ -176,22 +173,6 @@ reloadcaddy () {
 	fi
 }
 
-restartphpfpm () {
-	phpvalue;
-	# Ubuntu
-	if [[ -e "$ubuntuphp5fpm" ]]; then
-	service php5-fpm restart &>/dev/null
-
-	# CentOS
-	elif [[ -e "$centosphpfpm" || -e "$centosphpfpm2" ]]; then
-	service php-fpm restart &>/dev/null
-
-	# PHP 7
-	elif [[ -e "$phpfpm7" ]]; then
-	ervice php7.3-fpm restart &>/dev/null
-	fi
-}
-
 caddystatus () {
 	# Check if Caddy is installed or not
 	isinstalled || exit 1
@@ -213,8 +194,6 @@ caddystatus () {
 		else
 			caddyuptime=$(echo $((secs/86400))" days, "$(date -d "1970-01-01 + $secs seconds" "+%H hrs %M min %S sec"))
 		fi
-
-		systemctl status caddy
 
 		echo ""
 		echo "  $caddyname is $($blue)running$($normal)"
@@ -244,15 +223,6 @@ getcaddy () {
 	elif uname -m | grep -q 86; then
 		cpubits="386"
 		cpubitsname="32bit..."
-	elif uname -m | grep -q armv5; then
-		cpubits="arm5"
-		cpubitsname="ARM 5..."
-	elif uname -m | grep -q armv6l; then
-		cpubits="arm6"
-		cpubitsname="ARM 6..."
-	elif uname -m | grep -q armv7l; then
-		cpubits="arm7"
-		cpubitsname="ARM 7..."
 	else
 		echo; echo "  unsupported or unknown architecture";
 		echo; exit;
@@ -283,7 +253,6 @@ getcaddy () {
 		echo "  https://caddyserver.com/download/linux/$cpubits"
 		exit 1
 	fi
-
 
 	echo ""
 }
@@ -427,39 +396,26 @@ installphp () {
 			  echo "PHP was installed!"
 	  else
 				# Install PHP
-			if hash yum 2>/dev/null; then
-					yum update -y &>/dev/null && yum install sed php-fpm php-cli php-curl curl sudo -y &>/dev/null
-					echo "  [$($blue)DONE$($normal)]"
-					echo "  Installed 'php-fpm php-cli php-curl curl sudo'"
-
-	 		elif hash apt-get 2>/dev/null; then
-	        apt install ca-certificates apt-transport-https -y
+	      apt install ca-certificates apt-transport-https -y;
 				wget -q https://packages.sury.org/php/apt.gpg -O- | apt-key add -
 	      echo "deb https://packages.sury.org/php/ stretch main" | tee /etc/apt/sources.list.d/php.list
 					echo ""
 					apt update
-					apt install php7.3-fpm -y
+					apt install $phpversion -y
 					apt install php7.3 php7.3-mysql php7.3-gd php7.3-xml php7.3-cgi php7.3-cli php7.3-curl php7.3-zip php7.3-mbstring unzip -y
 					echo ""
 					# enable service startup and run
-					systemctl enable php7.3-fpm
-					systemctl start php7.3-fpm
+					systemctl enable $phpversion
+					systemctl start $phpversion
 
 					echo " PHP installation was[$($blue)DONE$($normal)]"
      fi
 	 fi
 }
 
-phpvalue () {
-	ubuntuphp5fpm="/etc/php5/fpm/pool.d/www.conf"
-	centosphpfpm="/etc/php/fpm/pool.d/www.conf"
-	centosphpfpm2="/etc/php-fpm.d/www.conf"
-	phpfpm7="/etc/php/7.3/fpm/pool.d/www.conf"
-}
-
 caddyfile () {
   # php FastCGI configuration
-  phpsock=/run/php/php7.3-fpm.sock
+  phpsock=/run/php/$phpversion.sock
 	# Check if Caddyfile exist
 	# Generate Caddyfile
 	if [[ ! -e $caddyfile ]]; then
