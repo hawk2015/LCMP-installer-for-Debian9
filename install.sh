@@ -49,7 +49,7 @@ installphp () {
 		# enable service startup and run
 		systemctl enable $phpversion
 		systemctl start $phpversion
-
+		echo ""
 		echo " PHP installation was[$($blue)DONE$($normal)]"
 		echo ""
 }
@@ -70,6 +70,7 @@ installwp() {
 	mv wordpress/* .;
 	rm wordpress/ -rf;
 	chown $caddyuser:$caddyuser $caddywww/wordpress
+	echo ""
 	echo " Wordpress installation was[$($blue)DONE$($normal)]"
 	echo ""
 }
