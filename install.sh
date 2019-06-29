@@ -11,6 +11,9 @@ phppath="/etc/php"
 phpversion="php7.3-fpm"
 phpsock="/run/php/$phpversion.sock"
 
+caddywww="/var/www" # folder where public files should be
+caddyuser="www-data" # user under caddy is gonna be running
+
 about () {
 	echo ""
 	echo "  ========================================================= "
@@ -40,36 +43,42 @@ until
  echo "----------LCMP Control Manu-----------"
  echo "Please enter your choise:(1-9)"
  echo "1. $($blue)Install$($normal) Caddy Web Server"
- echo "2. $($blue)Start$($normal) Caddy Web Server"
- echo "3. $($blue)Stop$($normal) Caddy Web Server"
- echo "4. $($blue)Check $($normal) Status of Caddy Web Server"
- echo "5. $($blue)Backup$($normal) The Caddy Config Files"
- echo "6. $($blue)Restore$($normal) The Caddy Config Files"
- echo "7. $($blue)Install$($normal) PHP7.3"
- echo "8. $($blue)Install$($normal) MariaDB (branch of MySQL)"
- echo "9. $($red)Delete$($normal) Caddy Web Server"
- echo "10. Exit Menu"
+ echo "2. $($blue)Install$($normal) Caddy with plugins：http.cache,http.cors,http.expires,http.filter,http.git,tls.dns.cloudflare"
+ echo "3. $($blue)Start$($normal) Caddy Web Server"
+ echo "4. $($blue)Stop$($normal) Caddy Web Server"
+ echo "5. $($blue)Check $($normal) Status of Caddy Web Server"
+ echo "6. $($blue)Backup$($normal) The Caddy Config Files"
+ echo "7. $($blue)Restore$($normal) The Caddy Config Files"
+ echo "8. $($red)Delete$($normal) Caddy Web Server"
+ echo "9. $($blue)Install$($normal) PHP7.3"
+ echo "10. $($blue)Install$($normal) MariaDB (branch of MySQL)"
+ echo "11. $($blue)Install$($normal) Wordpress"
+ echo "12. Exit Menu"
  echo "--------------------------------------"
 
  read -r -p "  Input Number: " inputnum
- test $inputnum -eq 10
+ test $inputnum -eq 12
  do
 
   case $inputnum in
  1) bash /tmp/caddy install;;
- 2) bash /tmp/caddy start;;
- 3) bash /tmp/caddy stop;;
- 4) bash /tmp/caddy install;;
- 5) bash /tmp/caddy install;;
- 6) bash /tmp/caddy install;;
- 7) bash /tmp/caddy install;;
- 8) bash /tmp/caddy install;;
+ 2) bash /tmp/caddy install http.cache,http.cors,http.expires,http.filter,http.git,tls.dns.cloudflare;;
+ 3) bash /tmp/caddy start;;
+ 4) bash /tmp/caddy stop;;
+ 5) bash /tmp/caddy status;;
+ 6) bash /tmp/caddy backup;;
+ 7) bash /tmp/caddy restore;;
+ 8) bash /tmp/caddy delete;;
+ 9) installphp;;
+ 10) installsql;;
+ 11) installwp;;
  *) echo "Sorry, Wrong number. try again, please!";;
    esac
 
  done
 exit;
 
+#install php
 installphp () {
 	if [[ -e "$phppath" ]] ; then
 			  echo "PHP was installed!"
@@ -93,4 +102,22 @@ installphp () {
 		systemctl start $phpversion
 
 		echo " PHP installation was[$($blue)DONE$($normal)]"
+}
+#install MariaDB
+installsql() {
+	apt update;
+	apt install mariadb-server;
+	mysql_secure_installation
+}
+
+# intsall wordpress
+installwp() {
+	mkdir $caddywww/wordpress;
+	cd $caddywww/wordpress;
+	wget https://wordpress.org/latest.tar.gz;
+	tar xvf  latest.tar.gz;
+	mv wordpress/* .;
+	rm wordpress/ -rf;
+	chown $caddyuser:$caddyuser $caddywww/wordpress
+	echo " Wordpress installation was[$($blue)DONE$($normal)]"
 }
