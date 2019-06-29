@@ -16,14 +16,14 @@ caddyuser="www-data" # user under caddy is gonna be running
 
 about () {
 	echo ""
-	echo "  ========================================================= "
-	echo "  \          LCMP Installer for Debian9 x64                / "
-	echo "  \                   version=v1.0                         / "
-	echo "  \          Linux:  Debian9 x64                           / "
-	echo "  \          Caddy: Caddy web server v1.0.0                / "
-	echo "  \          MariaDB : mysql branch                        / "
-	echo "  \          Php : php7.3                                  / "
-	echo "  ========================================================= "
+	echo "  ===================================================== "
+	echo " |          LCMP Installer for Debian9 x64             |"
+	echo " |                  version=v1.0                       |"
+	echo " |          Linux:  Debian9 x64                        |"
+	echo " |          Caddy: Caddy web server v1.0.0             |"
+	echo " |          MariaDB : mysql branch                     |"
+	echo " |          Php : php7.3                               |"
+	echo "  ==================================================== "
 	echo ""
 }
 
