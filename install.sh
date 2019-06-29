@@ -17,7 +17,7 @@ caddyuser="www-data" # user under caddy is gonna be running
 about () {
 	echo ""
 	echo "  ========================================================= "
-	echo "  \           LCMP Installer for Debian9 x64               / "
+	echo "  \          LCMP Installer for Debian9 x64                / "
 	echo "  \                   version=v1.0                         / "
 	echo "  \          Linux:  Debian9 x64                           / "
 	echo "  \          Caddy: Caddy web server v1.0.0                / "
@@ -51,12 +51,14 @@ installphp () {
 		systemctl start $phpversion
 
 		echo " PHP installation was[$($blue)DONE$($normal)]"
+		echo ""
 }
 #install MariaDB
 installsql() {
 	apt update;
 	apt install mariadb-server;
 	mysql_secure_installation
+	echo ""
 }
 
 # intsall wordpress
@@ -69,9 +71,10 @@ installwp() {
 	rm wordpress/ -rf;
 	chown $caddyuser:$caddyuser $caddywww/wordpress
 	echo " Wordpress installation was[$($blue)DONE$($normal)]"
+	echo ""
 }
 
-#check Caddy Installer new script
+#check Caddy Installer script
 if [[ -e "/tmp/caddy" ]]; then
 	echo ""
 	echo "  Removing old isntall script"
@@ -98,7 +101,7 @@ until
  echo "9. $($blue)Install$($normal) PHP7.3"
  echo "10. $($yellow)Install$($normal) MariaDB (branch of MySQL)"
  echo "11. $($yellow)Install$($normal) Wordpress"
- echo "12. about installer"
+ echo "12. about"
  echo "13. Exit Menu"
  echo "--------------------------------------"
 
