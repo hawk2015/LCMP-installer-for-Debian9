@@ -1,0 +1,96 @@
+#!/bin/bash
+#
+red="tput setaf 1"
+blue="tput setaf 2"
+yellow="tput setaf 3"
+green="tput setaf 4"
+purple="tput setaf 5"
+normal="tput sgr0"
+
+phppath="/etc/php"
+phpversion="php7.3-fpm"
+phpsock="/run/php/$phpversion.sock"
+
+about () {
+	echo ""
+	echo "  ========================================================= "
+	echo "  \           LCMP Installer for Debian9 x64               / "
+	echo "  \                   version=v1.0                         / "
+	echo "  \          Linux:  Debian9 x64                           / "
+	echo "  \          Caddy: Caddy web server v1.0.0                / "
+	echo "  \          MariaDB : mysql branch                        / "
+	echo "  \          Php : php7.3                                  / "
+	echo "  ========================================================= "
+	echo ""
+}
+#check Caddy Installer new script
+if [[ -e "/tmp/caddy" ]]; then
+	echo ""
+	echo "  Removing old isntall script"
+	rm -f /tmp/caddy
+fi
+echo ""
+cd /tmp
+wget -q https://raw.githubusercontent.com/hawk2015/LCMP-installer-for-Debian9/master/caddy && chmod +x caddy
+mv caddy /tmp &>/dev/null
+echo ""
+
+input=
+until
+ echo "----------LCMP Control Manu-----------"
+ echo "Please enter your choise:(1-9)"
+ echo "1. $($blue)Install$($normal) Caddy Web Server"
+ echo "2. $($blue)Start$($normal) Caddy Web Server"
+ echo "3. $($blue)Stop$($normal) Caddy Web Server"
+ echo "4. $($blue)Check $($normal) Status of Caddy Web Server"
+ echo "5. $($blue)Backup$($normal) The Caddy Config Files"
+ echo "6. $($blue)Restore$($normal) The Caddy Config Files"
+ echo "7. $($blue)Install$($normal) PHP7.3"
+ echo "8. $($blue)Install$($normal) MariaDB (branch of MySQL)"
+ echo "9. $($red)Delete$($normal) Caddy Web Server"
+ echo "10. Exit Menu"
+ echo "--------------------------------------"
+
+ read -r -p "  Input Number: " inputnum
+ test $inputnum -eq 10
+ do
+
+  case $inputnum in
+ 1) bash /tmp/caddy install;;
+ 2) bash /tmp/caddy start;;
+ 3) bash /tmp/caddy stop;;
+ 4) bash /tmp/caddy install;;
+ 5) bash /tmp/caddy install;;
+ 6) bash /tmp/caddy install;;
+ 7) bash /tmp/caddy install;;
+ 8) bash /tmp/caddy install;;
+ *) echo "Sorry, Wrong number. try again, please!";;
+   esac
+
+ done
+exit;
+
+installphp () {
+	if [[ -e "$phppath" ]] ; then
+			  echo "PHP was installed!"
+	  else
+				# Install PHP
+	      apt install ca-certificates apt-transport-https -y;
+				wget -q https://packages.sury.org/php/apt.gpg -O- | apt-key add -
+	      echo "deb https://packages.sury.org/php/ stretch main" | tee /etc/apt/sources.list.d/php.list
+					echo ""
+					apt update;
+					apt install $phpversion -y;
+					apt install php7.3 php7.3-mysql php7.3-gd php7.3-xml php7.3-cgi php7.3-cli php7.3-curl php7.3-zip php7.3-mbstring unzip -y
+					echo ""
+	 fi
+	 # Detect Caddyfile, and setup information
+	 if [[ -e "/etc/caddy/Caddyfile" ]]; then
+	 	sed -i "4i\\\t fastcgi / /run/php/$phpversion.sock php" /etc/caddy/Caddyfile
+		fi
+		# enable service startup and run
+		systemctl enable $phpversion
+		systemctl start $phpversion
+
+		echo " PHP installation was[$($blue)DONE$($normal)]"
+}

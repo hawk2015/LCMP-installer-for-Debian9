@@ -1,7 +1,8 @@
 #!/bin/bash
 #
-# LCMP Installer for Debian9
-# reference: https://github.com/sayem314/Caddy-Web-Server-Installer
+# Caddy Installer for Debian9
+# (reference: https://github.com/sayem314/Caddy-Web-Server-Installer)
+# version=v1.0
 #
 red="tput setaf 1"
 blue="tput setaf 2"
@@ -9,7 +10,6 @@ yellow="tput setaf 3"
 green="tput setaf 4"
 purple="tput setaf 5"
 normal="tput sgr0"
-
 
 # Do not change any value after installation
 caddypath="/usr/local/bin" # folder where caddyserver will be kept
@@ -20,56 +20,11 @@ caddyfile="/etc/caddy/Caddyfile" # caddy web server configuration file
 caddylog="/var/log/caddy" # folder where logs will be written
 caddyuser="www-data" # user under caddy is gonna be running
 
-phppath="/etc/php"
-phpversion="php7.3-fpm"
-
 # Global config
 caddyname="Caddy Web Server"
-# special version for me
-versions="v0.1s"
 bashname=$(basename "$0")
 pids=$(pgrep -nf $caddypath/caddy)
 
-# working directory
-cd /opt || echo "Oops! /opt doesn't exist."
-
-about () {
-	echo ""
-	echo "  ========================================================= "
-	echo "  \           LCMP Installer for Debian9 x64               / "
-	echo "  \                   $versions                            / "
-	echo "  \          Linux:  Debian9 x64                           / "
-	echo "  \          Caddy: Caddy web server v1.0.0                / "
-	echo "  \          MariaDB : mysql branch                        / "
-	echo "  \          Php : php7.3                                  / "
-	echo "  ========================================================= "
-	echo ""
-}
-
-howto () {
-	echo "  Welcome!"
-	echo "  run $($yellow)$bashname help $($normal) for help"
-	echo ""
-}
-
-prms () {
-	echo ""
-	echo "  $bashname start          - Start $caddyname."
-	echo "  $bashname stop           - Stop/Shutdown $caddyname."
-	echo "  $bashname reload         - Reload $caddyname."
-	echo "  $bashname restart        - Restart $caddyname."
-	echo "  $bashname status         - Check $caddyname is running or not"; echo "                         or just run '$bashname'."
-	echo "  $bashname install        - Install $caddyname on fresh OS."
-	echo "  $bashname installphp     - Install $caddyname on fresh OS."
-	echo "  $bashname edit1           - Edit Caddyfile using nano or default editor."
-	echo "  $bashname edit2           - Edit caddy.service using nano or default editor."
-	echo "  $bashname service        - Make $caddyname start on boot (upstart/systemd)."; echo "                         Not required because we install service on install."
-	echo "  $bashname update         - Update $caddyname."
-	echo "  $bashname delete         - Uninstall $caddyname and data."; echo "                         We would prompt you if you want to keep data."
-	echo "  $bashname version        - Print version information."
-	echo "  $bashname about          - About $caddyname Installer."
-	echo ""
-}
 
 isinstalled () {
 	# check if caddy is installed or return error code 1
@@ -108,10 +63,6 @@ startcaddy () {
 		sleep 1
 		echo "  [$($blue)DONE$($normal)]"
 
-		sleep 1
-		# restart or reload php for smooth environment
-		hash php 2>/dev/null && service $phpversion restart &>/dev/null;
-		pids=$(pgrep -nf $caddypath/caddy); caddystatus;
 	else
 		echo ""
 		echo "  $caddyname is already $($blue)running$($normal) on: $pids (PID)"
@@ -394,30 +345,7 @@ updatecaddy () {
 	echo; echo "  Updated to $caddyversion"; echo;
 }
 
-installphp () {
-	if [[ -e "$phppath" ]] ; then
-			  echo "PHP was installed!"
-	  else
-				# Install PHP
-	      apt install ca-certificates apt-transport-https -y;
-				wget -q https://packages.sury.org/php/apt.gpg -O- | apt-key add -
-	      echo "deb https://packages.sury.org/php/ stretch main" | tee /etc/apt/sources.list.d/php.list
-					echo ""
-					apt update;
-					apt install $phpversion -y;
-					apt install php7.3 php7.3-mysql php7.3-gd php7.3-xml php7.3-cgi php7.3-cli php7.3-curl php7.3-zip php7.3-mbstring unzip -y
-					echo ""
-					# enable service startup and run
-					systemctl enable $phpversion
-					systemctl start $phpversion
-
-					echo " PHP installation was[$($blue)DONE$($normal)]"
-	 fi
-}
-
 caddyfile () {
-  # php FastCGI configuration
-  phpsock=/run/php/$phpversion.sock
 	# Check if Caddyfile exist
 	# Generate Caddyfile
 	if [[ ! -e $caddyfile ]]; then
@@ -447,15 +375,14 @@ caddyfile () {
 						read -r -p "  Global API Key: " domainkey
 					  echo ""
 						echo "$domainname {
-											root $caddywww
-											gzip
-											tls $domainmail
-											tls {
-												dns cloudflare
-											}
-											log $caddylog/access.log
-											errors $caddylog/error.log
-											fastcgi / $phpsock php
+						  root $caddywww
+							gzip
+							tls $domainmail
+							tls {
+								dns cloudflare
+							}
+							log $caddylog/access.log
+							errors $caddylog/error.log
 										}
 					" >> $caddyfile
 
@@ -472,13 +399,12 @@ caddyfile () {
 					done
 
 					echo "$domainname {
-										root $caddywww
-										gzip
-										tls $domainmail
-										log $caddylog/access.log
-										errors $caddylog/error.log
-										fastcgi / $phpsock php
-									}
+						root $caddywww
+						gzip
+						tls $domainmail
+						log $caddylog/access.log
+						errors $caddylog/error.log
+					}
 								" >> $caddyfile
 			fi
 
@@ -780,8 +706,6 @@ case $1 in
 		amiroot; plugin="$2"; installcaddy; caddyfile; makeservice;;
 	'-update'|'--update'|'update'|'updatecaddy' )
 		amiroot; plugin="$2"; updatecaddy; caddyfile;;
-	'-installphp'|'--installphp'|'installphp' )
-		amiroot; installphp;;
 
 	'-edit1'|'edit1'|'editcaddyfile' )
 		amiroot; editcaddyfile;;
@@ -798,14 +722,10 @@ case $1 in
 		backupcaddy;;
 	'-restore'|'--restore'|'restore' )
 		restorecaddy;;
-	'-about'|'about'|'--about' )
-		about;;
-	'-h'|'help'|'-help'|'--help' )
-		prms;;
 	'-v'|'version'|'-version'|'--version'|'versioninfo'|'-V' )
 		versioninfo;;
 	*)
-		caddystatus; howto;;
+		caddystatus;;
 esac
 
 # check updates every 72hrs
