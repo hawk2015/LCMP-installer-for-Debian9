@@ -96,7 +96,7 @@ echo ""
 input=
 until
  echo "----------LCMP Control Manu-----------"
- echo "Please enter your choise:(1-9)"
+ echo "Please enter your choise:(1-13)"
  echo "1. $($yellow)Install$($normal) Caddy Web Server"
  echo "2. $($yellow)Install$($normal) Caddy with plugins：http.cache,http.cors,http.expires,http.filter,http.git,tls.dns.cloudflare"
  echo "3. $($blue)Start$($normal) Caddy Web Server"

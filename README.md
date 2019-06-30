@@ -7,7 +7,7 @@ wget https://raw.githubusercontent.com/hawk2015/LCMP-installer-for-Debian9/maste
 See the Manu for detailed instructions：
 
 ----------LCMP Control Manu-----------
-Please enter your choise:(1-9)
+Please enter your choise:(1-13)
 1. Install Caddy Web Server
 2. Install Caddy with plugins：http.cache,http.cors,http.expires,http.filter,http.git,tls.dns.cloudflare
 3. Start Caddy Web Server
