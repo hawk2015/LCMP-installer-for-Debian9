@@ -75,7 +75,7 @@ installwp() {
 	# Detect Caddyfile, modif Caddyfile
 	if [[ -e "$caddyfile" ]]; then
 	sed -i 's?'$caddywww'?'$caddywww'/wordpress?' $caddyfile
-
+  fi
 	echo ""
 	echo " Wordpress installation was[$($blue)DONE$($normal)]"
 	echo ""
