@@ -105,7 +105,7 @@ until
  echo "6. $($blue)Backup$($normal) The Caddy Config Files"
  echo "7. $($blue)Restore$($normal) The Caddy Config Files"
  echo "8. $($red)Delete$($normal) Caddy Web Server"
- echo "9. $($blue)Install$($normal) PHP7.3"
+ echo "9. $($yellow)Install$($normal) PHP7.3"
  echo "10. $($yellow)Install$($normal) MariaDB (branch of MySQL)"
  echo "11. $($yellow)Install$($normal) Wordpress"
  echo "12. about"

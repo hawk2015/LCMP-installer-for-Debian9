@@ -68,10 +68,6 @@ startcaddy () {
 		echo "  $caddyname is already $($blue)running$($normal) on: $pids (PID)"
 		echo ""
 	fi
-
-	#reload caddyfile
-  caddy -conf $caddyfile &>/dev/null
-
 	systemctl daemon-reload
 	systemctl enable caddy
 }
