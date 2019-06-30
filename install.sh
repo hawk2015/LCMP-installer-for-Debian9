@@ -11,6 +11,7 @@ phppath="/etc/php"
 phpversion="php7.3-fpm"
 phpsock="/run/php/$phpversion.sock"
 
+caddyfile="/etc/caddy/Caddyfile" # caddy web server configuration file
 caddywww="/var/www" # folder where public files should be
 caddyuser="www-data" # user under caddy is gonna be running
 
@@ -44,8 +45,8 @@ installphp () {
 	 fi
 	 # Detect Caddyfile, and setup information
 	 if [[ -e "/etc/caddy/Caddyfile" ]]; then
-	 	sed -i "4i\\\t fastcgi / /run/php/$phpversion.sock php" /etc/caddy/Caddyfile
-		fi
+	 	sed -i "4i\\\t fastcgi / /run/php/$phpversion.sock php" $caddyfile
+	 fi
 		# enable service startup and run
 		systemctl enable $phpversion
 		systemctl start $phpversion
@@ -70,6 +71,11 @@ installwp() {
 	mv wordpress/* .;
 	rm wordpress/ -rf;
 	chown $caddyuser:$caddyuser $caddywww/wordpress
+
+	# Detect Caddyfile, modif Caddyfile
+	if [[ -e "$caddyfile" ]]; then
+	sed -i 's?'$caddywww'?'$caddywww'/wordpress?' $caddyfile
+
 	echo ""
 	echo " Wordpress installation was[$($blue)DONE$($normal)]"
 	echo ""
@@ -106,7 +112,7 @@ until
  echo "13. Exit Menu"
  echo "--------------------------------------"
 
- read -r -p "  Input Number: " inputnum
+ read -r -p "Input Number: " inputnum
  test $inputnum -eq 13
  do
 

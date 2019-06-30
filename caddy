@@ -70,7 +70,7 @@ startcaddy () {
 	fi
 
 	#reload caddyfile
-  caddy -conf $caddyfile
+  caddy -conf $caddyfile &>/dev/null
 
 	systemctl daemon-reload
 	systemctl enable caddy
