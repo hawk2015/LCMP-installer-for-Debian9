@@ -70,7 +70,7 @@ installwp() {
 	tar xvf  latest.tar.gz;
 	mv wordpress/* .;
 	rm wordpress/ -rf;
-	chown $caddyuser:$caddyuser $caddywww/wordpress
+	chown -R $caddyuser:$caddyuser $caddywww/wordpress
 
 	# Detect Caddyfile, modif Caddyfile
 	if [[ -e "$caddyfile" ]]; then
